@@ -4,5 +4,8 @@ node_modules/
 Database/*.sqlite
 Database/*.db
 
+database/*.sqlite
+database/*.db
+
 logs/
 *.log

@@ -1,2 +1,8 @@
 node_modules/
 .env
+
+Database/*.sqlite
+Database/*.db
+
+logs/
+*.log

@@ -11,8 +11,11 @@ async function editPartyMessage(client, party) {
   const channel = await client.channels.fetch(party.channelId);
   const message = await channel.messages.fetch(party.messageId);
 
+  const { embed, files } = createPartyEmbed(party);
+
   await message.edit({
-    embeds: [createPartyEmbed(party)],
+    embeds: [embed],
+    files,
     components: [createButtons(party)]
   });
 }

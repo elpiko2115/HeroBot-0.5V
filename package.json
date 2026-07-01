@@ -4,10 +4,12 @@
   "description": "Bot do organizowania wypraw na herosów",
   "main": "index.js",
   "type": "commonjs",
-  "scripts": {
-    "start": "node index.js",
-    "deploy": "node deploy-commands.js"
-  },
+"scripts": {
+  "start": "node index.js",
+  "deploy": "node deploy-commands.js",
+  "start": "npm run download-images && node index.js",
+  "download-images": "node scripts/downloadImages.js"
+},
   "dependencies": {
     "axios": "^1.18.1",
     "better-sqlite3": "^12.11.1",

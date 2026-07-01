@@ -1,4 +1,5 @@
-const { EmbedBuilder } = require("discord.js");
+const path = require("path");
+const { EmbedBuilder, AttachmentBuilder } = require("discord.js");
 
 function formatMembers(members) {
   return members
@@ -16,7 +17,9 @@ function createPartyEmbed(party) {
       ? "🔴 Drużyna pełna"
       : "🟢 Rekrutacja otwarta";
 
-  return new EmbedBuilder()
+  const files = [];
+
+  const embed = new EmbedBuilder()
     .setColor(isClosed ? 0x95a5a6 : isFull ? 0xe74c3c : party.color)
     .setTitle(`⚔️ Wyprawa na ${party.bossEmoji} ${party.bossName}`)
     .addFields(
@@ -29,8 +32,23 @@ function createPartyEmbed(party) {
       { name: "📝 Opis", value: party.description || "Brak opisu", inline: false },
       { name: "Status", value: status, inline: false }
     )
-    .setFooter({ text: "HeroBot • System wypraw Margonem" })
+    .setFooter({
+      text: "HeroBot • System wypraw Margonem"
+    })
     .setTimestamp();
+
+  if (party.imageFile) {
+    const imagePath = path.join(__dirname, "..", "assets", "bosses", party.imageFile);
+
+    const attachment = new AttachmentBuilder(imagePath, {
+      name: party.imageFile
+    });
+
+    embed.setImage(`attachment://${party.imageFile}`);
+    files.push(attachment);
+  }
+
+  return { embed, files };
 }
 
 module.exports = createPartyEmbed;

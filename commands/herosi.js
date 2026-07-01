@@ -42,7 +42,6 @@ module.exports = {
         .setEmoji("👑")
         .setStyle(ButtonStyle.Secondary)
     );
-
     await interaction.reply({
       embeds: [embed],
       components: [row],

@@ -10,7 +10,11 @@ const {
   StringSelectMenuBuilder
 } = require("discord.js");
 
-const bosses = require("../data/bosses.json");
+function getBosses() {
+  delete require.cache[require.resolve("../data/bosses.json")];
+  return require("../data/bosses.json");
+}
+
 const partyManager = require("../utils/partyManager");
 const createPartyEmbed = require("../utils/createPartyEmbed");
 const detectClass = require("../utils/detectClass");
@@ -45,6 +49,7 @@ module.exports = {
           const categoryData = categories[categoryKey];
           if (!categoryData) return;
 
+          const bosses = getBosses();
           const categoryBosses = bosses.filter(
             boss => boss.category === categoryData.category
           );
@@ -148,8 +153,11 @@ module.exports = {
               return;
             }
 
+            const { embed, files } = createPartyEmbed(result.party);
+
             await interaction.update({
-              embeds: [createPartyEmbed(result.party)],
+              embeds: [embed],
+              files,
               components: [createButtons(result.party)]
             });
 
@@ -166,9 +174,11 @@ module.exports = {
             }
 
             const result = partyManager.leaveParty(messageId, interaction.user.id);
+            const { embed, files } = createPartyEmbed(result.party);
 
             await interaction.update({
-              embeds: [createPartyEmbed(result.party)],
+              embeds: [embed],
+              files,
               components: [createButtons(result.party)]
             });
 
@@ -185,9 +195,11 @@ module.exports = {
             }
 
             const result = partyManager.closeParty(messageId);
+            const { embed, files } = createPartyEmbed(result.party);
 
             await interaction.update({
-              embeds: [createPartyEmbed(result.party)],
+              embeds: [embed],
+              files,
               components: [createButtons(result.party)]
             });
 
@@ -242,6 +254,7 @@ module.exports = {
         const bossName = parts.slice(2).join("_");
 
         const categoryData = categories[categoryKey];
+        const bosses = getBosses();
 
         const boss = bosses.find(
           item => item.name === bossName && item.category === categoryData.category
@@ -266,6 +279,8 @@ module.exports = {
           bossEmoji: boss?.emoji || "🎯",
           level: boss?.level || "?",
           map: boss?.map || "Nieznana",
+          image: boss?.image || "",
+          imageFile: boss?.imageFile || "",
           color: categoryData.color,
           owner: {
             id: interaction.user.id,
@@ -286,8 +301,11 @@ module.exports = {
 
         const channel = await interaction.client.channels.fetch(PARTY_CHANNEL_ID);
 
+        const { embed, files } = createPartyEmbed(partyPreview);
+
         const message = await channel.send({
-          embeds: [createPartyEmbed(partyPreview)],
+          embeds: [embed],
+          files,
           components: [createButtons(partyPreview)]
         });
 

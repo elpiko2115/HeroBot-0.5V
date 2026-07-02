@@ -1,5 +1,5 @@
 const partyManager = require("./partyManager");
-const createPartyEmbed = require("./createPartyEmbed");
+const createPartyPanel = require("./createPartyPanel");
 const createButtons = require("./createButtons");
 
 const CHECK_INTERVAL = 60 * 1000;
@@ -11,13 +11,13 @@ async function editPartyMessage(client, party) {
   const channel = await client.channels.fetch(party.channelId);
   const message = await channel.messages.fetch(party.messageId);
 
-  const { embed, files } = createPartyEmbed(party);
+const panel = await createPartyPanel(result.party);
 
-  await message.edit({
-    embeds: [embed],
-    files,
-    components: [createButtons(party)]
-  });
+await message.edit({
+    files: [panel],
+    components: [createButtons(result.party)]
+});
+
 }
 
 function startScheduler(client) {

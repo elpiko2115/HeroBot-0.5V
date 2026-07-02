@@ -30,6 +30,42 @@ CREATE TABLE IF NOT EXISTS party_members (
   class_emoji TEXT,
   PRIMARY KEY (message_id, user_id)
 );
+
+CREATE TABLE IF NOT EXISTS loot_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+  message_id TEXT NOT NULL,
+
+  boss_name TEXT NOT NULL,
+
+  winner_id TEXT NOT NULL,
+  winner_name TEXT,
+
+  owner_id TEXT NOT NULL,
+
+  members_json TEXT NOT NULL,
+
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS party_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  message_id TEXT NOT NULL,
+  boss_name TEXT NOT NULL,
+  owner_id TEXT NOT NULL,
+  owner_name TEXT,
+  members_json TEXT NOT NULL,
+  members_count INTEGER NOT NULL,
+  slots INTEGER NOT NULL,
+  time TEXT,
+  closed_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS bot_state (
+  key TEXT PRIMARY KEY,
+  value TEXT
+
+  );
 `);
 
 function addColumn(columnSql) {

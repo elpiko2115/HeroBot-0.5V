@@ -16,12 +16,17 @@ function getBosses() {
 }
 
 const partyManager = require("../utils/partyManager");
-const createPartyEmbed = require("../utils/createPartyEmbed");
+const createPartyPanel = require("../utils/createPartyPanel");
 const detectClass = require("../utils/detectClass");
 const createButtons = require("../utils/createButtons");
 const parseStartTime = require("../utils/timeParser");
+const lootManager = require("../utils/lootManager");
+const historyManager = require("../utils/historyManager");
+const { updatePartyDashboard, updateLootDashboard } = require("../utils/dashboardManager");
 
 const PARTY_CHANNEL_ID = "1521668086074445985";
+const LOOT_CHANNEL_ID = process.env.LOOT_CHANNEL_ID || "1521958266748538927";
+const PARTY_HISTORY_CHANNEL_ID = process.env.PARTY_HISTORY_CHANNEL_ID;
 
 const categories = {
   e2: { title: "🟢 Wybierz Elitę II", category: "E2", color: 0x2ecc71 },
@@ -118,6 +123,84 @@ module.exports = {
           return;
         }
 
+        if (interaction.customId === "loot_roll") {
+          const messageId = interaction.message.id;
+          const party = partyManager.getParty(messageId);
+
+          if (!party) {
+            await interaction.reply({
+              content: "❌ Nie znaleziono danych tej wyprawy.",
+              ephemeral: true
+            });
+            return;
+          }
+
+          if (!party.closed) {
+            await interaction.reply({
+              content: "❌ Loot można losować dopiero po zamknięciu wyprawy.",
+              ephemeral: true
+            });
+            return;
+          }
+
+          if (lootManager.hasLootResult(messageId)) {
+            await interaction.reply({
+              content: "❌ Loot dla tej wyprawy został już rozdany.",
+              ephemeral: true
+            });
+            return;
+          }
+
+          if (interaction.user.id !== party.owner.id) {
+            await interaction.reply({
+              content: "❌ Tylko organizator może losować loot.",
+              ephemeral: true
+            });
+            return;
+          }
+
+          const members = party.members || [];
+
+          if (members.length === 0) {
+            await interaction.reply({
+              content: "❌ Brak uczestników do losowania.",
+              ephemeral: true
+            });
+            return;
+          }
+
+          const winner = members[Math.floor(Math.random() * members.length)];
+          const guildMember = await interaction.guild.members.fetch(winner.id).catch(() => null);
+
+          const winnerName =
+            guildMember?.displayName ||
+            guildMember?.user?.username ||
+            winner.displayName ||
+            winner.username ||
+            winner.id;
+
+          lootManager.saveLootResult({
+            messageId,
+            bossName: party.bossName,
+            winner: {
+              ...winner,
+              displayName: winnerName
+            },
+            ownerId: party.owner.id,
+            members
+          });
+
+          await updateLootDashboard(interaction.client);
+
+
+          await interaction.reply({
+            content: `✅ Loot został wylosowany i zapisany na kanale <#${LOOT_CHANNEL_ID}>.`,
+            ephemeral: true
+          });
+
+          return;
+        }
+
         if (["join", "leave", "close"].includes(interaction.customId)) {
           const messageId = interaction.message.id;
           const party = partyManager.getParty(messageId);
@@ -135,6 +218,8 @@ module.exports = {
 
             const result = partyManager.joinParty(messageId, {
               id: interaction.user.id,
+              username: interaction.user.username,
+              displayName: interaction.member.displayName,
               className: detected.className,
               classEmoji: detected.classEmoji
             });
@@ -153,11 +238,10 @@ module.exports = {
               return;
             }
 
-            const { embed, files } = createPartyEmbed(result.party);
+            const panel = await createPartyPanel(result.party);
 
             await interaction.update({
-              embeds: [embed],
-              files,
+              files: [panel],
               components: [createButtons(result.party)]
             });
 
@@ -174,11 +258,10 @@ module.exports = {
             }
 
             const result = partyManager.leaveParty(messageId, interaction.user.id);
-            const { embed, files } = createPartyEmbed(result.party);
+            const panel = await createPartyPanel(result.party);
 
             await interaction.update({
-              embeds: [embed],
-              files,
+              files: [panel],
               components: [createButtons(result.party)]
             });
 
@@ -194,12 +277,19 @@ module.exports = {
               return;
             }
 
-            const result = partyManager.closeParty(messageId);
-            const { embed, files } = createPartyEmbed(result.party);
+const result = partyManager.closeParty(messageId);
+
+historyManager.savePartyHistory({
+  ...result.party,
+  messageId
+});
+
+await updatePartyDashboard(interaction.client);
+
+const panel = await createPartyPanel(result.party);
 
             await interaction.update({
-              embeds: [embed],
-              files,
+              files: [panel],
               components: [createButtons(result.party)]
             });
 
@@ -284,6 +374,8 @@ module.exports = {
           color: categoryData.color,
           owner: {
             id: interaction.user.id,
+            username: interaction.user.username,
+            displayName: interaction.member.displayName,
             className: detected.className,
             classEmoji: detected.classEmoji
           },
@@ -301,11 +393,10 @@ module.exports = {
 
         const channel = await interaction.client.channels.fetch(PARTY_CHANNEL_ID);
 
-        const { embed, files } = createPartyEmbed(partyPreview);
+        const panel = await createPartyPanel(partyPreview);
 
         const message = await channel.send({
-          embeds: [embed],
-          files,
+          files: [panel],
           components: [createButtons(partyPreview)]
         });
 

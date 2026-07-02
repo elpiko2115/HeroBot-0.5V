@@ -17,7 +17,23 @@ function savePartyHistory(party) {
     party.bossName,
     party.owner.id,
     party.owner.displayName || party.owner.username || party.owner.id,
-    JSON.stringify(party.members || []),
+    JSON.stringify(
+  (party.members || []).map(member => ({
+    id: member.id,
+    username:
+      member.username ||
+      member.displayName ||
+      member.name ||
+      member.id,
+    displayName:
+      member.displayName ||
+      member.username ||
+      member.name ||
+      member.id,
+    className: member.className || null,
+    classEmoji: member.classEmoji || null
+  }))
+),
     (party.members || []).length,
     party.slots,
     party.time

@@ -4,6 +4,7 @@ const { AttachmentBuilder } = require("discord.js");
 const theme = require("./panel/theme");
 const drawBackground = require("./panel/drawBackground");
 
+
 function drawText(ctx, text, x, y, options = {}) {
   ctx.fillStyle = options.color || "#f9fafb";
   ctx.font = `${options.weight || "400"} ${options.size || 24}px Arial`;

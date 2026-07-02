@@ -38,9 +38,9 @@ function createButtons(party) {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("join")
-      .setLabel("Dołącz")
+      .setLabel(isFull ? "Dołącz do rezerwy" : "Dołącz")
       .setStyle(ButtonStyle.Success)
-      .setDisabled(isFull),
+      .setDisabled(false),
 
     new ButtonBuilder()
       .setCustomId("leave")

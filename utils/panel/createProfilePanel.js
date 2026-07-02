@@ -3,7 +3,7 @@ const path = require("path");
 
 const drawRoundRect = require("./ui/drawRoundRect");
 const drawStatCard = require("./ui/drawStatCard");
-
+const drawAvatar = require("./ui/drawAvatar");
 
 function getPlayerRank(joinedParties) {
   if (joinedParties >= 500) return { name: "Bohater Margonem", color: "#22d3ee", icon: "hero.png" };
@@ -65,19 +65,7 @@ ctx.textAlign = "left";
       user.displayAvatarURL({ extension: "png", size: 256 })
     );
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(740, 115, 85, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.clip();
-    ctx.drawImage(avatar, 655, 30, 170, 170);
-    ctx.restore();
-
-    ctx.beginPath();
-    ctx.arc(740, 115, 88, 0, Math.PI * 2);
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = "#a855f7";
-    ctx.stroke();
+   await drawAvatar(ctx, avatar, 655, 30, 170, "#a855f7"); 
   } catch {}
 
   const sword = await loadImage(path.join(__dirname, "../../assets/icons/sword.png"));

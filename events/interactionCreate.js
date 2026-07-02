@@ -213,40 +213,50 @@ module.exports = {
             return;
           }
 
-          if (interaction.customId === "join") {
-            const detected = detectClass(interaction.member);
+if (interaction.customId === "join") {
+  const detected = detectClass(interaction.member);
 
-            const result = partyManager.joinParty(messageId, {
-              id: interaction.user.id,
-              username: interaction.user.username,
-              displayName: interaction.member.displayName,
-              className: detected.className,
-              classEmoji: detected.classEmoji
-            });
+  const result = partyManager.joinParty(messageId, {
+    id: interaction.user.id,
+    username: interaction.user.username,
+    displayName: interaction.member.displayName,
+    className: detected.className,
+    classEmoji: detected.classEmoji
+  });
 
-            if (!result.ok) {
-              const messages = {
-                closed: "❌ Rekrutacja jest zamknięta.",
-                already_joined: "⚠️ Już jesteś zapisany na tę wyprawę.",
-                full: "❌ Drużyna jest pełna."
-              };
+  // ❗ kolejka rezerwowa
+  if (!result.ok) {
+    if (result.reason === "waitlist") {
+      await interaction.reply({
+        content: `🪑 Drużyna jest pełna.\nZostałeś dodany do kolejki rezerwowej.\nTwoje miejsce: **#${result.position}**`,
+        ephemeral: true
+      });
+      return;
+    }
 
-              await interaction.reply({
-                content: messages[result.reason] || "❌ Nie udało się dołączyć.",
-                ephemeral: true
-              });
-              return;
-            }
+    const messages = {
+      closed: "❌ Rekrutacja jest zamknięta.",
+      already_joined: "⚠️ Już jesteś zapisany na tę wyprawę.",
+      full: "❌ Drużyna jest pełna."
+    };
 
-            const panel = await createPartyPanel(result.party);
+    await interaction.reply({
+      content: messages[result.reason] || "❌ Nie udało się dołączyć.",
+      ephemeral: true
+    });
 
-            await interaction.update({
-              files: [panel],
-              components: [createButtons(result.party)]
-            });
+    return;
+  }
 
-            return;
-          }
+  const panel = await createPartyPanel(result.party);
+
+  await interaction.update({
+    files: [panel],
+    components: [createButtons(result.party)]
+  });
+
+  return;
+}
 
           if (interaction.customId === "leave") {
             if (interaction.user.id === party.owner.id) {

@@ -31,6 +31,18 @@ CREATE TABLE IF NOT EXISTS party_members (
   PRIMARY KEY (message_id, user_id)
 );
 
+CREATE TABLE IF NOT EXISTS party_waitlist (
+  message_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  username TEXT,
+  display_name TEXT,
+  class_name TEXT,
+  class_emoji TEXT,
+  position INTEGER,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (message_id, user_id)
+);
+
 CREATE TABLE IF NOT EXISTS loot_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
 
@@ -79,5 +91,12 @@ function addColumn(columnSql) {
 addColumn("ALTER TABLE parties ADD COLUMN channel_id TEXT");
 addColumn("ALTER TABLE parties ADD COLUMN start_at INTEGER");
 addColumn("ALTER TABLE parties ADD COLUMN reminded INTEGER DEFAULT 0");
+
+addColumn("ALTER TABLE party_members ADD COLUMN username TEXT");
+addColumn("ALTER TABLE party_members ADD COLUMN display_name TEXT");
+
+addColumn("ALTER TABLE parties ADD COLUMN image TEXT");
+addColumn("ALTER TABLE parties ADD COLUMN image_file TEXT");
+addColumn("ALTER TABLE parties ADD COLUMN owner_name TEXT");
 
 module.exports = db;

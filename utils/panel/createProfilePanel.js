@@ -1,19 +1,9 @@
 const { createCanvas, loadImage } = require("@napi-rs/canvas");
 const path = require("path");
 
-function drawRoundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
+const drawRoundRect = require("./ui/drawRoundRect");
+const drawStatCard = require("./ui/drawStatCard");
+
 
 function getPlayerRank(joinedParties) {
   if (joinedParties >= 500) return { name: "Bohater Margonem", color: "#22d3ee", icon: "hero.png" };
@@ -27,32 +17,6 @@ function getPlayerRank(joinedParties) {
   return { name: "Bez rangi", color: "#64748b", icon: "novice.png" };
 }
 
-function drawStatCard(ctx, x, y, icon, title, value) {
-  ctx.save();
-
-  ctx.fillStyle = "rgba(15, 23, 42, 0.88)";
-  drawRoundRect(ctx, x, y, 185, 88, 16);
-  ctx.fill();
-  ctx.shadowColor = "rgba(0,0,0,0.35)";
-  ctx.shadowBlur = 12;
-  ctx.shadowOffsetY = 0;
-
-  ctx.strokeStyle = "rgba(139, 92, 246, 0.65)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.drawImage(icon, x + 16, y + 16, 30, 30);
-
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "bold 18px Arial";
-  ctx.fillText(title.toUpperCase(), x + 58, y + 36);
-
-  ctx.fillStyle = "#f8fafc";
-  ctx.font = "bold 32px Arial";
-  ctx.fillText(String(value), x + 58, y + 70);
-
-  ctx.restore();
-}
 
 async function createProfilePanel(user, stats) {
   const canvas = createCanvas(900, 420);

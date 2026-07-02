@@ -1,10 +1,11 @@
 const drawRoundRect = require("./drawRoundRect");
+const theme = require("./theme");
 
 function drawStatCard(ctx, x, y, icon, title, value) {
     ctx.save();
 
     // Tło
-    ctx.fillStyle = "rgba(15, 23, 42, 0.88)";
+    ctx.fillStyle = theme.card;
     drawRoundRect(ctx, x, y, 185, 88, 16);
     ctx.fill();
 
@@ -14,7 +15,7 @@ function drawStatCard(ctx, x, y, icon, title, value) {
     ctx.shadowOffsetY = 0;
 
     // Ramka
-    ctx.strokeStyle = "rgba(139,92,246,0.65)";
+    ctx.strokeStyle = theme.borderSoft;
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -22,12 +23,12 @@ function drawStatCard(ctx, x, y, icon, title, value) {
     ctx.drawImage(icon, x + 16, y + 16, 30, 30);
 
     // Tytuł
-    ctx.fillStyle = "#94a3b8";
+    ctx.fillStyle = theme.muted;
     ctx.font = "bold 18px Arial";
     ctx.fillText(title.toUpperCase(), x + 58, y + 36);
 
     // Wartość
-    ctx.fillStyle = "#f8fafc";
+    ctx.fillStyle = theme.text;
     ctx.font = "bold 32px Arial";
     ctx.fillText(String(value), x + 58, y + 70);
 

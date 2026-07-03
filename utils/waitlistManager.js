@@ -1,14 +1,14 @@
 const db = require("../database/database");
 
 function addToWaitlist(messageId, member) {
-  const count = db.prepare(`
-    SELECT COUNT(*) AS count
-    FROM party_waitlist
-    WHERE message_id = ?
-  `).get(messageId).count;
+const count = db.prepare(`
+  SELECT COUNT(*) AS count
+  FROM party_waitlist
+  WHERE message_id = ?
+`).get(messageId)?.count || 0;
 
   db.prepare(`
-    INSERT OR REPLACE INTO party_waitlist (
+    INSERT INTO party_waitlist (
       message_id, user_id, username, display_name, class_name, class_emoji, position
     ) VALUES (?, ?, ?, ?, ?, ?, ?)
   `).run(
@@ -48,14 +48,16 @@ function popNextWaitlist(messageId) {
     classEmoji: next.class_emoji
   };
 }
-
 function getWaitlist(messageId) {
-  return db.prepare(`
-    SELECT *
-    FROM party_waitlist
-    WHERE message_id = ?
-    ORDER BY position ASC
-  `).all(messageId);
+const rows = db.prepare(`
+  SELECT *
+  FROM party_waitlist
+  WHERE message_id = ?
+  ORDER BY position ASC
+`).all(messageId);
+
+
+return rows;
 }
 
 module.exports = {

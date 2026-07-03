@@ -120,6 +120,7 @@ function joinParty(messageId, member) {
   if (party.closed) return { ok: false, reason: "closed" };
   if (party.members.some(m => m.id === member.id)) return { ok: false, reason: "already_joined" };
   if (party.members.length >= party.slots) {
+  const waitlist = require("./waitlistManager");
   const position = waitlist.addToWaitlist(messageId, member);
 
   return {

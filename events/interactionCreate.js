@@ -226,13 +226,22 @@ if (interaction.customId === "join") {
 
   // ❗ kolejka rezerwowa
   if (!result.ok) {
-    if (result.reason === "waitlist") {
-      await interaction.reply({
-        content: `🪑 Drużyna jest pełna.\nZostałeś dodany do kolejki rezerwowej.\nTwoje miejsce: **#${result.position}**`,
-        ephemeral: true
-      });
-      return;
-    }
+if (result.reason === "waitlist") {
+  const freshParty = partyManager.getParty(messageId);
+  const panel = await createPartyPanel(freshParty);
+
+  await interaction.update({
+    files: [panel],
+    components: [createButtons(freshParty)]
+  });
+
+  await interaction.followUp({
+    content: `🪑 Drużyna jest pełna.\nZostałeś dodany do kolejki rezerwowej.\nTwoje miejsce: **#${result.position}**`,
+    ephemeral: true
+  });
+
+  return;
+}
 
     const messages = {
       closed: "❌ Rekrutacja jest zamknięta.",
@@ -248,7 +257,8 @@ if (interaction.customId === "join") {
     return;
   }
 
-  const panel = await createPartyPanel(result.party);
+  const freshParty = partyManager.getParty(messageId);
+  const panel = await createPartyPanel(freshParty);
 
   await interaction.update({
     files: [panel],

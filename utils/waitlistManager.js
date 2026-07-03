@@ -60,8 +60,16 @@ const rows = db.prepare(`
 return rows;
 }
 
+function clearWaitlist(messageId) {
+  db.prepare(`
+    DELETE FROM party_waitlist
+    WHERE message_id = ?
+  `).run(messageId);
+}
+
 module.exports = {
   addToWaitlist,
   popNextWaitlist,
-  getWaitlist
+  getWaitlist,
+  clearWaitlist
 };

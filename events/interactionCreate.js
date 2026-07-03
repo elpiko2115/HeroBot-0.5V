@@ -277,15 +277,23 @@ if (result.reason === "waitlist") {
               return;
             }
 
-            const result = partyManager.leaveParty(messageId, interaction.user.id);
-            const panel = await createPartyPanel(result.party);
+const result = partyManager.leaveParty(messageId, interaction.user.id);
+console.log("LEAVE RESULT:", result);
+const panel = await createPartyPanel(result.party);
 
-            await interaction.update({
-              files: [panel],
-              components: [createButtons(result.party)]
-            });
+await interaction.update({
+  files: [panel],
+  components: [createButtons(result.party)]
+});
 
-            return;
+if (result.promoted) {
+  await interaction.followUp({
+    content: `🎉 **${result.promoted.displayName || result.promoted.username || result.promoted.id}** wskoczył z rezerwy do głównego składu!`,
+    ephemeral: false
+  });
+}
+
+return;
           }
 
           if (interaction.customId === "close") {

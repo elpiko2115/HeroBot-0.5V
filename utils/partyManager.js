@@ -189,6 +189,8 @@ function closeParty(messageId) {
     WHERE message_id = ?
   `).run(messageId);
 
+  waitlist.clearWaitlist(messageId);
+
   return { ok: true, party: getParty(messageId) };
 }
 

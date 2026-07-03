@@ -7,7 +7,8 @@ const {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  StringSelectMenuBuilder
+  StringSelectMenuBuilder,
+  AttachmentBuilder
 } = require("discord.js");
 
 function getBosses() {
@@ -23,6 +24,14 @@ const parseStartTime = require("../utils/timeParser");
 const lootManager = require("../utils/lootManager");
 const historyManager = require("../utils/historyManager");
 const { updatePartyDashboard, updateLootDashboard } = require("../utils/dashboardManager");
+const getBossRuns = require("../utils/boss/getBossRuns");
+const getBossAttendance = require("../utils/boss/getBossAttendance");
+const getBossOrganizer = require("../utils/boss/getBossOrganizer");
+const getLastBossRun = require("../utils/boss/getLastBossRun");
+const getLastBossLoot = require("../utils/boss/getLastBossLoot");
+const getBossLootCount = require("../utils/boss/getBossLootCount");
+const getBossTopWinner = require("../utils/boss/getBossTopWinner");
+const createBossPanel = require("../utils/panel/createBossPanel");
 
 const PARTY_CHANNEL_ID = "1521668086074445985";
 const LOOT_CHANNEL_ID = process.env.LOOT_CHANNEL_ID || "1521958266748538927";
@@ -325,46 +334,89 @@ const panel = await createPartyPanel(result.party);
           }
         }
       }
-
       if (interaction.isStringSelectMenu()) {
-        if (!interaction.customId.startsWith("selectBoss_")) return;
+  if (interaction.customId === "boss_stats_select") {
+    const selectedBossName = interaction.values[0];
 
-        const categoryKey = interaction.customId.replace("selectBoss_", "");
-        const bossName = interaction.values[0];
+    const runs = getBossRuns(selectedBossName);
+    const averageAttendance = getBossAttendance(selectedBossName);
+    const topOrganizer = getBossOrganizer(selectedBossName);
+    const lastRun = getLastBossRun(selectedBossName);
+    const lastLoot = getLastBossLoot(selectedBossName);
+    const lootCount = getBossLootCount(selectedBossName);
+    const topWinner = getBossTopWinner(selectedBossName);
 
-        const modal = new ModalBuilder()
-          .setCustomId(`party_${categoryKey}_${bossName}`)
-          .setTitle(`Wyprawa - ${bossName}`);
+const bosses = getBosses();
+const boss = bosses.find(b => b.name === selectedBossName);
 
-        const timeInput = new TextInputBuilder()
-          .setCustomId("time")
-          .setLabel("Godzina (np. 21:30)")
-          .setStyle(TextInputStyle.Short)
-          .setRequired(true);
+const formattedLastRun = lastRun
+  ? new Date(lastRun.closed_at || lastRun.time).toLocaleDateString("pl-PL")
+  : "Brak danych";
 
-        const slotsInput = new TextInputBuilder()
-          .setCustomId("slots")
-          .setLabel("Liczba miejsc")
-          .setStyle(TextInputStyle.Short)
-          .setRequired(true);
+const image = await createBossPanel({
+  boss,
+  stats: {
+    runs,
+    averageAttendance,
+    topOrganizer: topOrganizer ? `${topOrganizer.owner_name} (${topOrganizer.total})` : "Brak danych",
+    lastRun: formattedLastRun,
+    lootCount,
+    lastLoot: lastLoot ? lastLoot.winner_name : "Brak danych",
+    topWinner: topWinner ? `${topWinner.winner_name} (${topWinner.total})` : "Brak danych"
+  }
+});
 
-        const descriptionInput = new TextInputBuilder()
-          .setCustomId("description")
-          .setLabel("Opis")
-          .setStyle(TextInputStyle.Paragraph)
-          .setRequired(false);
+const attachment = new AttachmentBuilder(image, {
+  name: "boss.png"
+});
 
-        modal.addComponents(
-          new ActionRowBuilder().addComponents(timeInput),
-          new ActionRowBuilder().addComponents(slotsInput),
-          new ActionRowBuilder().addComponents(descriptionInput)
-        );
+await interaction.update({
+  content: "",
+  files: [attachment],
+  embeds: [],
+  components: []
+});
+    return;
+  }
 
-        await interaction.showModal(modal);
-        return;
-      }
+  if (!interaction.customId.startsWith("selectBoss_")) return;
 
-      if (interaction.isModalSubmit()) {
+  const categoryKey = interaction.customId.replace("selectBoss_", "");
+  const bossName = interaction.values[0];
+
+  const modal = new ModalBuilder()
+    .setCustomId(`party_${categoryKey}_${bossName}`)
+    .setTitle(`Wyprawa - ${bossName}`);
+
+  const timeInput = new TextInputBuilder()
+    .setCustomId("time")
+    .setLabel("Godzina (np. 21:30)")
+    .setStyle(TextInputStyle.Short)
+    .setRequired(true);
+
+  const slotsInput = new TextInputBuilder()
+    .setCustomId("slots")
+    .setLabel("Liczba miejsc")
+    .setStyle(TextInputStyle.Short)
+    .setRequired(true);
+
+  const descriptionInput = new TextInputBuilder()
+    .setCustomId("description")
+    .setLabel("Opis")
+    .setStyle(TextInputStyle.Paragraph)
+    .setRequired(false);
+
+  modal.addComponents(
+    new ActionRowBuilder().addComponents(timeInput),
+    new ActionRowBuilder().addComponents(slotsInput),
+    new ActionRowBuilder().addComponents(descriptionInput)
+  );
+
+  await interaction.showModal(modal);
+  return;
+}
+
+if (interaction.isModalSubmit()) {
         if (!interaction.customId.startsWith("party_")) return;
 
         const parts = interaction.customId.split("_");

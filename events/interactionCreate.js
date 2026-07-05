@@ -350,7 +350,15 @@ const bosses = getBosses();
 const boss = bosses.find(b => b.name === selectedBossName);
 
 const formattedLastRun = lastRun
-  ? new Date(lastRun.closed_at || lastRun.time).toLocaleDateString("pl-PL")
+  ? (() => {
+      const d = new Date(lastRun.closed_at || lastRun.time);
+
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+
+      return `${day}.${month}.${year}`;
+    })()
   : "Brak danych";
 
 const image = await createBossPanel({
